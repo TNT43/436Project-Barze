@@ -83,3 +83,6 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+#where ive got the api key
+Barze/app/src/debug/res/values/google_maps_api.xml
