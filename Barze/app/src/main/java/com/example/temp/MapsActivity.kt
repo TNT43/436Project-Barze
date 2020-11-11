@@ -26,12 +26,18 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.ktx.Firebase
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+
+
+    private lateinit var database: DatabaseReference  // Firebase DB reference
 
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -51,6 +57,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        database = FirebaseDatabase.getInstance().reference
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
@@ -286,6 +294,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         private fun parseJsonObject(obj : JSONObject) : HashMap<String, String> {
             var dataList = HashMap<String, String>()
             var name = obj.getString("name")
+
+
+
             var lat = obj.getJSONObject("geometry").getJSONObject("location").getString("lat")
             var lng = obj.getJSONObject("geometry").getJSONObject("location").getString("lng")
             var rat = obj.getString("rating")
@@ -293,6 +304,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             dataList.put("lat", lat)
             dataList.put("lng", lng)
             dataList.put("rat", rat)
+
+            Log.i(TAG,"Adding to db")
+            database.child("Bars").child(name).setValue(dataList)
 
             return dataList
         }
