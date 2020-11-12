@@ -37,6 +37,8 @@
             android:label="@string/title_activity_maps">
         </activity>
 
+        <activity android:name=".BarView"/>
+
         <activity
             android:name=".LoginActivity">
             <intent-filter>

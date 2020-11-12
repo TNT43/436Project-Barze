@@ -14,4 +14,8 @@ class LoginActivity : Activity(){
     fun login(view : View){
         startActivity(Intent(this, MapsActivity::class.java))
     }
+
+    fun viewBars(view : View){
+        startActivity(Intent(this, BarView::class.java))
+    }
 }
