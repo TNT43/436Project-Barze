@@ -1,9 +1,11 @@
 package com.example.temp
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -40,6 +42,16 @@ class BarView : AppCompatActivity(){
 
         database.orderByKey().addValueEventListener(_taskListener)
 
+        mListView.setOnItemClickListener{
+                parent, view, position, id ->
+            val element = _taskList!![position] // The item that was clicked
+            val intent = Intent(this, SingleBarActivity::class.java)
+            Log.i("TAG", "putthign this in intent "+element.name +" "+ element.rat)
+            intent.putExtra("BarName", element.name)
+            intent.putExtra("BarRating", element.rat)
+            startActivity(intent)
+        }
+
     }
 
     private fun loadTaskList(dataSnapshot: DataSnapshot) {
@@ -68,6 +80,7 @@ class BarView : AppCompatActivity(){
 
                 //key will return the Firebase ID
                 task.name = map.get("name") as String
+                task.rat   =map.get("rat").toString().toFloat() as Float
                 _taskList!!.add(task)
             }
         }

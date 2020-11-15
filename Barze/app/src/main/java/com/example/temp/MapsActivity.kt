@@ -305,8 +305,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             dataList.put("lng", lng)
             dataList.put("rat", rat)
 
-            Log.i(TAG,"Adding to db")
-            database.child("Bars").child(name).setValue(dataList)
+            /// This is commented out as the nodes already exist in the DB, don't want any duplicates.
+            //Log.i(TAG,"Adding to db")
+           // database.child("Bars").child(name).setValue(dataList)
 
             return dataList
         }
