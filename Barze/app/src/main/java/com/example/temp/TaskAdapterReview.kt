@@ -9,15 +9,15 @@ import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
 
-
-class TaskAdapter(context: Context, taskList: MutableList<Bar>) : BaseAdapter() {
+// This serves as the List adapter for the Reviews listview.
+class TaskAdapterReview(context: Context, taskList: MutableList<Review>) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
     private var _taskList = taskList
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
 
-        val itemText: String = _taskList.get(position).name as String
+        val itemText: String = _taskList.get(position).name +"   "+ _taskList.get(position).review
 
         val view: View
         val listRowHolder: ListRowHolder

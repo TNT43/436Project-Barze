@@ -1,29 +1,26 @@
 package com.example.temp
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.ListView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.*
 
 
+// This class represents every bar
 class Bar(var name: String, var lat: Float, var long: Float, var rat: Float){
     companion object Factory {
         fun create(): Bar = Bar("def",1.0F,1.0F, 5F)
     }
 }
-// Add a chile event listener to make this view more dynamic
-// https://firebase.google.com/docs/database/android/lists-of-data
+
+// This activity will list all of the bars on the page
 class BarView : AppCompatActivity(){
 
     private lateinit var database: DatabaseReference  // Firebase DB reference
 
-    lateinit var _adapter: TaskAdapter
+    lateinit var _adapterBar: TaskAdapterBar
 
     var _taskList: MutableList<Bar>? = null
 
@@ -34,14 +31,19 @@ class BarView : AppCompatActivity(){
         _taskList = mutableListOf()
 
         database = FirebaseDatabase.getInstance().reference
+
         var mListView = findViewById<ListView>(R.id.list_view);
 
-        _adapter = TaskAdapter(this, _taskList!!)
+        _adapterBar = TaskAdapterBar(this, _taskList!!)
 
-        mListView.adapter = _adapter
+        mListView.adapter = _adapterBar
 
+
+       // Adding listener to the database, this will handle reading all of the Bars from Firebase.
         database.orderByKey().addValueEventListener(_taskListener)
 
+        // Handling behavior for when one of the bars on tbe list is clicked. This opens the SingleBarActivity.kt,
+        // passing the bar name and rating in the intent.
         mListView.setOnItemClickListener{
                 parent, view, position, id ->
             val element = _taskList!![position] // The item that was clicked
@@ -54,6 +56,7 @@ class BarView : AppCompatActivity(){
 
     }
 
+    // This function creates the list of bars that are stored internally.
     private fun loadTaskList(dataSnapshot: DataSnapshot) {
         Log.d("TAG", "loadTaskList")
 
@@ -78,7 +81,7 @@ class BarView : AppCompatActivity(){
                 //get current data in a map
                 val map = currentItem.getValue() as HashMap<*, *>
 
-                //key will return the Firebase ID
+                // Create and popultate the Bar object with the name and rating pulled from firebase.
                 task.name = map.get("name") as String
                 task.rat   =map.get("rat").toString().toFloat() as Float
                 _taskList!!.add(task)
@@ -86,7 +89,7 @@ class BarView : AppCompatActivity(){
         }
 
         //alert adapter that has changed
-        _adapter.notifyDataSetChanged()
+        _adapterBar.notifyDataSetChanged()
 
     }
 
