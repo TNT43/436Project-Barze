@@ -1,13 +1,11 @@
 package com.example.temp
 
 import android.content.Context
+import android.media.Image
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.CheckBox
-import android.widget.ImageButton
-import android.widget.TextView
+import android.widget.*
 
 
 // This class serves as the adapter for the list view of Bars in BarView.kt
@@ -18,8 +16,9 @@ class TaskAdapterBar(context: Context, taskList: MutableList<Bar>) : BaseAdapter
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
 
-        // itemText will be displayed on the textview
+        // itemText and picture will be displayed on the textview
         val itemText: String = _taskList.get(position).name as String
+        val itemImage: Int = _taskList.get(position).pic
 
         val view: View
         val listRowHolder: ListRowHolder
@@ -34,7 +33,7 @@ class TaskAdapterBar(context: Context, taskList: MutableList<Bar>) : BaseAdapter
         }
 
         listRowHolder.desc.text = itemText
-
+        listRowHolder.pic.setImageResource(itemImage)
         return view
     }
 
@@ -52,6 +51,6 @@ class TaskAdapterBar(context: Context, taskList: MutableList<Bar>) : BaseAdapter
 
     private class ListRowHolder(row: View?) {
         val desc: TextView = row!!.findViewById(R.id.bar_text_view) as TextView
-
+        var pic: ImageView = row!!.findViewById((R.id.bar_image_view)) as ImageView
     }
 }
