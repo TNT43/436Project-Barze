@@ -2,5 +2,6 @@
     <string name="app_name">Barze</string>
     <string name="title_activity_maps">Barze</string>
     <string name="maps_api_key"></string>
+    <string name="click_to_add_review">Click to Add Review</string>
 
 </resources>

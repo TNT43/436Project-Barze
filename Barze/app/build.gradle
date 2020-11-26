@@ -23,6 +23,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    configurations {
+        implementation.exclude module: 'proto-google-common-protos'
+        implementation.exclude module: 'protolite-well-known-types'
+        implementation.exclude module: 'protobuf-lite'
+    }
 }
 
 dependencies {
@@ -32,7 +38,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-    implementation 'com.google.firebase:firebase-database:19.5.0'
+    implementation 'com.google.firebase:firebase-database:19.5.1'
+    implementation 'com.google.firebase:firebase-storage:19.0.0'
+    implementation 'com.google.firebase:firebase-firestore:22.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
@@ -45,8 +53,9 @@ dependencies {
     implementation "androidx.core:core-ktx:1.3.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation("com.squareup.okhttp3:okhttp:4.8.1")
     implementation platform('com.google.firebase:firebase-bom:26.0.0')
+    implementation("com.squareup.okhttp3:okhttp:4.8.1")
+    implementation 'com.google.firebase:firebase-messaging:20.2.3'
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
 }

@@ -223,6 +223,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+
     // this function simply create a small box ui with the text of the bars rating in the center
     // it will return a bitmap that can be used to draw onto the map
     fun writeTextOnDrawable(drawableId: Int, text: String): Bitmap? {
