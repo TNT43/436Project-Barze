@@ -135,7 +135,7 @@ class SingleBarActivity : AppCompatActivity(){
                     Log.i("tag", "Entered adding record, data is:" + data)
                     Log.i("tag", "Barname is"+barName)
 
-                    database.child("Bars").child(barName).child("Images").push().setValue(data)
+                    //database.child("Bars").child(barName).child("Images").push().setValue(data)
 
 
                 } else {
