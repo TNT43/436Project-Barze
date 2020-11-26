@@ -1,4 +1,4 @@
-package com.example.temp
+ package com.example.temp
 
 import android.app.Activity
 import android.content.Intent
@@ -13,5 +13,9 @@ class LoginActivity : Activity(){
 
     fun login(view : View){
         startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    fun viewBars(view : View){
+        startActivity(Intent(this, BarView::class.java))
     }
 }
