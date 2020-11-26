@@ -2,10 +2,12 @@ package com.example.temp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.location.Location
-import android.os.AsyncTask
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -27,6 +29,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.util.*
+import kotlin.collections.HashMap
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -35,6 +39,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     lateinit var map: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var locationManager : LocationManager
     private lateinit var placesClient: PlacesClient
 
     private var lastKnownLocation: Location? = null
@@ -46,6 +51,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var JSONParser : JSONParsersClass //outsource parsing to clean up clutter
 
+    lateinit var barsInfo : HashMap<String, HashMap<String, Double>>
+    private  var currentBar : String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -54,9 +62,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        // set up fireb
         database = FirebaseDatabase.getInstance().reference
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
         placesClient = Places.createClient(this)
 
@@ -71,18 +82,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION
             )
         }
+
+        barsInfo = HashMap<String, HashMap<String, Double>>()
     }
     // this function is called when the google maps comes back to us ready to go (async)
-    // Defaults for map should be made here instead of onCreate because map is NULL until
-    // this function is called. So things like on click listeners or map properties will be
-    // put in here
+    // this will tell us the map if ready to be worked on. Sometimes the user won't have given
+    // permission yet so we have to wait for that
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap // set our global map value
+        if(locationPermissionGranted){
+            setupMap()
+        }
+    }
+
+    // map setup. Create icons on map and onclicks
+    @SuppressLint("MissingPermission")
+    // we can supress this because we know the only way this function is called is if location
+    // permission is granted
+    private fun setupMap(){
+        // begin to keep track of current location. Using custom location listener defined
+        // in locationListener() function above
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+            1000 * 10.toLong(), 10f, locationListener())
+
         map.addMarker( // tester
             MarkerOptions()
                 .position(defaultLocation)
                 .title("Marker in UMD CP")
-                .snippet("WHY HELLO THERE")
         ).showInfoWindow()
 
         // this is where we'll set up the listener so anytime someone clicks on a marker
@@ -99,14 +125,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         // this removes markers for other stores like restraunts and big private companies
         //that are placed onto the map by default
-        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-        // change some map defaults, or this will kill app if location is not turned on
-        // since location is required for this app to work (for now, this is something i made up
-        // arbitrarily, we can make it different if we want)
-        updateLocationUI()
-        // figure out where we are right now
-        // this might be removed if we decide to just roll with CP area
-        getDeviceLocation()
+        map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
+
+        // this will allow a button in the top right to show that will take you back to your
+        // location on the map
+        map?.isMyLocationEnabled = true
+        map?.uiSettings?.isMyLocationButtonEnabled = true
+
         // create url to make api request for bars in our location at 5000 meter radius
         var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                 "?location=" + lat + "," + lng +
@@ -116,82 +141,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // now that map is finally initalized and db initalized in oncreate, we can give
         // a reference to this specific class object to the parser
         JSONParser = JSONParsersClass(this)
-        // this will exectue the api request and also deal with placing markers on map where bars
+        // JSONParser will exectue the api request and also deal with placing markers on map where bars
         // are and with the relevant information
         JSONParser.MakeAPIRequest(FIND_BARS).execute(url)
     }
+    // update the bar population as its listed on the firebase so that we can give users feedback
+    // about wait times/popularity
+    // TODO: Make it actually update firebase
+    private fun updateBarPop(){
+        Log.i(TAG, "START OF UPDATEBARPOP")
+        for((name, hashmap) in barsInfo){
+            // this will check to see if the user is within a certain range of the bar
+            // if its 'close enough' ill count it as at that bar
+            if(hashmap["lat"]!! <= lastKnownLocation?.latitude!! + .0001 && hashmap["lat"]!! >= lastKnownLocation?.latitude!! - .0001 &&
+                hashmap["lng"]!! <= lastKnownLocation?.longitude!! + .0001 && hashmap["lng"]!! >= lastKnownLocation?.longitude!! - .0001){
+                if(currentBar != ""){ // check if user was at a bar on the last check and update it
+                    // this will decrement a person from the bar they were previously at
+                    barsInfo.get(currentBar)!!.put("currentPopulation", barsInfo.get(currentBar)!!.get("currentPopulation")!! - 1)
+                }
 
-
-    // function will set up defaults/settings for maps, like a UI init function
-    // for now will kill the app if location permission not granted
-    @SuppressLint("MissingPermission")
-    // suppress missing permission for line   map?.isMyLocationEnabled = true because we know if
-    // we made it into the if statement that we have permission, so it will never error out
-    private fun updateLocationUI() {
-
-        if (locationPermissionGranted) { // checks if we have permission
-            // if we do, these two settings will enable the little icon where we are and
-            // a button in the top right corner that when clicked will center us back on our
-            // location
-            map?.isMyLocationEnabled = true
-            map?.uiSettings?.isMyLocationButtonEnabled = true
-        } else { // otherwise we'll kill the app
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                finishAffinity();
-            } else {
-                finish();
+                //this will update current bar location and increment the population at that bar
+                currentBar = name
+                hashmap.put("currentPopulation", hashmap.get("currentPopulation")!! + 1)
             }
         }
+        for((name, hashmap) in barsInfo){
+            Log.i(TAG, name + " " + hashmap.get("currentPopulation").toString())
+        }
+        Log.i(TAG, "ENDING OF UPDATEBARPOP")
     }
 
-    // this function uses built in service fusedLocationProviderClient to locate most recent
-    // latitude and longitude of deivce. It will then assign that to our lat lng variables
-    // and move the camera to be over the point
-    private fun getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        Log.i(TAG, "Getting Device Location.")
-        try {
-            if (locationPermissionGranted) { // check if we are allowed location
-                // use built in function to get location
-                val locationResult = fusedLocationProviderClient.lastLocation
-                Log.i(TAG, "Waiting for task.")
-                // when async function comes back operate on it
-                locationResult.addOnCompleteListener(this) { task ->
-                    // we found a location
-                    if (!task.isSuccessful) {
-                        Log.i(TAG, "Task Successful.")
-                        lastKnownLocation = task.result
-                        if (lastKnownLocation != null) {
-                            lat = lastKnownLocation!!.latitude
-                            lng = lastKnownLocation!!.longitude
-                            Log.d(TAG, "Location non-null")
-                            // Set the map's camera position to the current location of the device.
-                            map?.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(
-                                        lastKnownLocation!!.latitude,
-                                        lastKnownLocation!!.longitude
-                                    ), DEFAULT_ZOOM.toFloat()
-                                )
-                            )
-                        }
-                    } else { // no location was found for some reason so we use CP defaults
-                        Log.d(TAG, "Current location is null. Using defaults.")
-                        Log.e(TAG, "Exception: %s", task.exception)
-                        map?.moveCamera(
-                            CameraUpdateFactory
-                                .newLatLngZoom(defaultLocation, DEFAULT_ZOOM.toFloat())
+    // location listener will get information about the device should it change
+    // and update the global variable if needed and adjust where the map is looking
+    private fun locationListener(): LocationListener {
+
+        return object : LocationListener {
+            // Called back when location changes
+            override fun onLocationChanged(location: Location) {
+                if(lastKnownLocation == null || location.accuracy <= lastKnownLocation!!.accuracy){
+                    lastKnownLocation = location
+                    map?.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(
+                                lastKnownLocation!!.latitude,
+                                lastKnownLocation!!.longitude
+                            ), DEFAULT_ZOOM.toFloat()
                         )
-                        //map?.uiSettings?.isMyLocationButtonEnabled = false
-                    }
+                    )
+                    updateBarPop()
                 }
             }
-        } catch (e: SecurityException) {
-            Log.i(TAG, "Location permission turned OFF")
-            Log.e("Exception: %s", e.message, e)
+
+            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {  }
+
+            override fun onProviderEnabled(provider: String) { }
+
+            override fun onProviderDisabled(provider: String) {  }
         }
     }
 
@@ -205,9 +210,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermissionGranted = true
+                }else{ // if not given permission, kill the app because we require location data
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        finishAffinity();
+                    } else {
+                        finish();
+                    }
                 }
-                // if we get permission we flip our flag to true
-                // otherwise we leave it as be and we act accordingly elsewhere depending on flag
+                // begin to setup map. Was not done before because we had to wait for permission
+                setupMap()
             }
         }
     }
@@ -253,4 +264,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         //API Request types
         private const val FIND_BARS = 0
     }
+
+
 }
