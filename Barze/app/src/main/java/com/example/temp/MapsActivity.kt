@@ -3,6 +3,7 @@ package com.example.temp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.location.Location
@@ -10,8 +11,8 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Debug
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -84,6 +85,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         barsInfo = HashMap<String, HashMap<String, Double>>()
+
+        // this will call a function every 60 seconds that will poll the firebase and update the
+        // info snippets on the map markers
+        Timer().scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                JSONParser.updateInfo()
+            }
+        }, 10 * 1000, 10 * 1000) //put here time 1000 milliseconds=1 second
+
+
     }
     // this function is called when the google maps comes back to us ready to go (async)
     // this will tell us the map if ready to be worked on. Sometimes the user won't have given
@@ -91,6 +102,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap // set our global map value
         if(locationPermissionGranted){
+            Log.i(TAG, "Map is ready and permission is granted")
             setupMap()
         }
     }
@@ -100,31 +112,32 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // we can supress this because we know the only way this function is called is if location
     // permission is granted
     private fun setupMap(){
-        // begin to keep track of current location. Using custom location listener defined
-        // in locationListener() function above
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-            1000 * 10.toLong(), 10f, locationListener())
+        // now that map is finally initalized and db initalized in oncreate, we can give
+        // a reference to this specific class object to the parser
+        JSONParser = JSONParsersClass(this)
 
-        map.addMarker( // tester
+        // run the first update for firebase info
+        JSONParser.updateInfo()
+
+        map.addMarker( // base
             MarkerOptions()
                 .position(defaultLocation)
                 .title("Marker in UMD CP")
         ).showInfoWindow()
 
-        // this is where we'll set up the listener so anytime someone clicks on a marker
-        // we can do something with that information
-        map.setOnMarkerClickListener { marker ->
-            val position: LatLng = marker.position
-            Toast.makeText(
-                this,
-                "Lat " + position.latitude + " "
-                        + "Long " + position.longitude,
-                Toast.LENGTH_LONG
-            ).show()
+        // this listener will see if the user clicked on a bars info popup on the map
+        // and will start the singlebaractivity for that bar
+        map.setOnInfoWindowClickListener { marker ->
+            val intent = Intent(this, SingleBarActivity::class.java)
+            Log.i("TAG", "putthing this in intent FROM INFOWINDOW ONCLICK IN MAPSACTIVITY "+ marker.title +" "+ barsInfo[marker.title]!!.get("rat"))
+            intent.putExtra("BarName", marker.title)
+            intent.putExtra("BarRating",barsInfo[marker.title]!!.get("rat")!!.toFloat())
+            startActivity(intent)
             false
         }
+
         // this removes markers for other stores like restraunts and big private companies
-        //that are placed onto the map by default
+        // that are placed onto the map by default
         map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
 
         // this will allow a button in the top right to show that will take you back to your
@@ -138,38 +151,53 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 "&radius=5000" + "&type=" + "bar" +
                 "&key=" + resources.getString(R.string.google_maps_key);
 
-        // now that map is finally initalized and db initalized in oncreate, we can give
-        // a reference to this specific class object to the parser
-        JSONParser = JSONParsersClass(this)
+
+        // begin to keep track of current location. Using custom location listener defined
+        // in locationListener() function above
+        // this will give us a gps update everytime the user moves more than 20 meters
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+            0, 20f, locationListener())
+
         // JSONParser will exectue the api request and also deal with placing markers on map where bars
         // are and with the relevant information
+        Log.i(TAG, "API request sent")
         JSONParser.MakeAPIRequest(FIND_BARS).execute(url)
     }
     // update the bar population as its listed on the firebase so that we can give users feedback
     // about wait times/popularity
-    // TODO: Make it actually update firebase
-    private fun updateBarPop(){
-        Log.i(TAG, "START OF UPDATEBARPOP")
+    fun updateBarPop(){
+        Log.i(TAG, "Updating Bar Pop")
+         if(currentBar != ""){ // check if user was at a bar on the last check and update it
+            // this will decrement a person from the bar they were previously at
+            barsInfo.get(currentBar)!!.put("currPop", barsInfo.get(currentBar)!!.get("currPop")!! - 1)
+            database.child("Bars").child(currentBar).child("currPop").setValue(barsInfo.get(currentBar)!!.getValue("currPop"))
+            currentBar = ""
+        }
         for((name, hashmap) in barsInfo){
             // this will check to see if the user is within a certain range of the bar
             // if its 'close enough' ill count it as at that bar
             if(hashmap["lat"]!! <= lastKnownLocation?.latitude!! + .0001 && hashmap["lat"]!! >= lastKnownLocation?.latitude!! - .0001 &&
                 hashmap["lng"]!! <= lastKnownLocation?.longitude!! + .0001 && hashmap["lng"]!! >= lastKnownLocation?.longitude!! - .0001){
-                if(currentBar != ""){ // check if user was at a bar on the last check and update it
-                    // this will decrement a person from the bar they were previously at
-                    barsInfo.get(currentBar)!!.put("currentPopulation", barsInfo.get(currentBar)!!.get("currentPopulation")!! - 1)
-                }
-
                 //this will update current bar location and increment the population at that bar
                 currentBar = name
-                hashmap.put("currentPopulation", hashmap.get("currentPopulation")!! + 1)
+                hashmap.put("currPop", hashmap.get("currPop")!! + 1)
+                database.child("Bars").child(currentBar).child("currPop").setValue(barsInfo.get(currentBar)!!.getValue("currPop"))
             }
         }
-        for((name, hashmap) in barsInfo){
-            Log.i(TAG, name + " " + hashmap.get("currentPopulation").toString())
+        // this will update the snippet on the info window to reflect correct number of users at bar
+        for(curr in JSONParser.mapMarkers){
+            curr.snippet = barsInfo[curr.title]!!.get("currPop")!!.toInt().toString() +
+                                " other users here"
         }
-        Log.i(TAG, "ENDING OF UPDATEBARPOP")
+
+        /*for((name, hashmap) in barsInfo){
+            Log.i(TAG, name + " " + hashmap.get("currPop").toString())
+        }*/
+        //Log.i(TAG, "ENDING OF UPDATEBARPOP")
     }
+    // this function goes through all the map markers on the map and changes the value in the info
+    // window to the proper amount of people example: (43 other users here -> 42 other users here)
+
 
     // location listener will get information about the device should it change
     // and update the global variable if needed and adjust where the map is looking
@@ -194,7 +222,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {  }
 
-            override fun onProviderEnabled(provider: String) { }
+            override fun onProviderEnabled(provider: String) { Log.i(TAG, "hello : )")}
 
             override fun onProviderDisabled(provider: String) {  }
         }
