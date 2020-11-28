@@ -19,19 +19,16 @@ import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
 
-// This class represents a Review object. It currently stores the user who created the review, and the review itself.
-class Review(var name: String, var review: String){
-    companion object Factory {
-        fun create(): Review = Review("default_user", "default_review")
-    }
-}
 
 // This activity displays details on a single given bar
-class SingleBarActivity : AppCompatActivity(){
+class UserProfile : AppCompatActivity(){
 
     private lateinit var database: DatabaseReference  // Firebase DB reference
 
+    // All the #2 variables are for the list view of favorites for the user, while the otheres are for reviews from the users
     lateinit var _adapterBar: TaskAdapterReview
+    lateinit var _adapterBar2: TaskAdapterBar
+
 
     lateinit var imageView:ImageView
     private val PICK_IMAGE_REQUEST = 71
@@ -39,6 +36,7 @@ class SingleBarActivity : AppCompatActivity(){
     private var storageReference: StorageReference? = null
 
     var _taskList: MutableList<Review>? = null
+    var _taskList2: MutableList<Bar>? = null
 
     // This variable will store the barname this page is supposed to be displaying.
     // This will usually be passed in by whatever intent is starting this activity.
@@ -46,65 +44,42 @@ class SingleBarActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.singlebar_view)
+        setContentView(R.layout.userprofile)
 
         _taskList = mutableListOf()
+        _taskList2 = mutableListOf()
+
         database = FirebaseDatabase.getInstance().reference
 
-        var mListView = findViewById<ListView>(R.id.review_list_view);
+        var mListView = findViewById<ListView>(R.id.user_review_list_view);
+        var mListView2 = findViewById<ListView>(R.id.favorites_list_view);
+
 
         _adapterBar = TaskAdapterReview(this, _taskList!!)
+        _adapterBar2 = TaskAdapterBar(this, _taskList2!!)
+
+        database.child("Reviews").child(FirebaseAuth.getInstance().currentUser!!.uid).addValueEventListener(_taskListener)
+        database.child("Favorites").child(FirebaseAuth.getInstance().currentUser!!.uid).addValueEventListener(_taskListener2)
+
 
         mListView.adapter = _adapterBar
+        mListView2.adapter = _adapterBar2
 
-
-        // Get bar name and rating from intent // this is where information specific to the bar should be extracted
-        val intent = getIntent()
-        barName = intent.getStringExtra("BarName")
-        val barRating = intent.getFloatExtra("BarRating", -1F)
-
-
-        val recordVisitButton = findViewById<Button>(R.id.btnVisit)
-        recordVisitButton.setOnClickListener {
-            val intent = Intent(this, ReportVisit::class.java)
-            intent.putExtra("BarName", barName)
-            intent.putExtra("BarRating", barRating)
-            startActivity(intent)
+        var proceedButton = findViewById<Button>(R.id.btnProceed)
+        proceedButton.setOnClickListener {
+            startActivity(Intent(this, BarView::class.java))
         }
-
 
         // Setting the text views to display the above data
-        val barNameTextView =findViewById<TextView>(R.id.singlebartextview)
-        val barRatingView = findViewById<TextView>(R.id.singlebarratingview)
-        barNameTextView.text = barName
-        barRatingView.text = barRating.toString()
+        val userEmailView =findViewById<TextView>(R.id.useremailtextview)
+        userEmailView.text = FirebaseAuth.getInstance().currentUser!!.email
 
-        // This part is to add Reviews to the bar
-        database.child("Bars").child(barName).addValueEventListener(_taskListener)
 
-        val reviewButton = findViewById<Button>(R.id.ReviewAddButton)
-        reviewButton.setOnClickListener {
-            val reviewText = findViewById<EditText>(R.id.ReviewInput).text.toString()
-            if (reviewText.length > 0) {
-                val user = FirebaseAuth.getInstance().currentUser
 
-                var reviewHolder = HashMap<String, String>()
-                user!!.email?.let { it1 -> reviewHolder.put("User", it1) }
-                // TODO - Push this review under the user in the users db for firebase.
-                reviewHolder.put("Review",reviewText)
-                database.child("Bars").child(barName).child("Reviews").push().setValue(reviewHolder)
-                database.child("Reviews").child(user!!.uid).child("Reviews").push().setValue(reviewHolder)
-
-                val reviewTextField = findViewById<EditText>(R.id.ReviewInput)
-                Toast.makeText(this, "Your review has been posted!", Toast.LENGTH_LONG).show()
-                reviewTextField.setText("")
-            }
-        }
-
-        // This part handles image uploading by user for reviews
-        val btnUpload = findViewById<Button>(R.id.btnUpload)
-        val btnChoose = findViewById<Button>(R.id.btnChoose)
-        imageView = findViewById<ImageView>(R.id.imgView)
+        // This part handles image uploading by user for profile
+        val btnUpload = findViewById<Button>(R.id.btnUpload2)
+        val btnChoose = findViewById<Button>(R.id.btnChoose2)
+        imageView = findViewById<ImageView>(R.id.imgView2)
 
         storageReference = FirebaseStorage.getInstance().reference
 
@@ -147,10 +122,8 @@ class SingleBarActivity : AppCompatActivity(){
                     data["imageUrl"] =   (downloadUri.toString())
 
                     Log.i("tag", "Entered adding record, data is:" + data)
-                    Log.i("tag", "Barname is"+barName)
                     val user = FirebaseAuth.getInstance().currentUser
-                    database.child("Images").child(barName).push().setValue(data)
-                    database.child("Images").child(user!!.uid).child("Bar_images").push().setValue(data)
+                    database.child("Images").child(user!!.uid).child("Profile_Pics").push().setValue(data)
 
                     Toast.makeText(this, "Upload completed", Toast.LENGTH_SHORT).show()
 
@@ -187,7 +160,7 @@ class SingleBarActivity : AppCompatActivity(){
     }
 
     private fun loadTaskList(dataSnapshot: DataSnapshot) {
-        Log.d("TAG", "loadTaskList for reviews")
+        Log.d("TAG", "loadTaskList for user reviews")
 
         val tasks = dataSnapshot.children.iterator()
 
@@ -227,10 +200,61 @@ class SingleBarActivity : AppCompatActivity(){
 
     }
 
+    private fun loadTaskList2(dataSnapshot: DataSnapshot) {
+        Log.d("TAG", "loadTaskList for user favorite bars")
+
+        val tasks = dataSnapshot.children.iterator()
+
+
+        //Check if current database contains any collection
+        if (tasks.hasNext()) {
+
+            _taskList2!!.clear()
+
+
+            val listIndex = tasks.next()
+            val itemsIterator = listIndex.children.iterator()
+
+            //check if the collection has any task or not
+            while (itemsIterator.hasNext()) {
+
+                //get current task
+                val currentItem = itemsIterator.next()
+                val task = Bar.create()
+
+                //get current data in a map
+                val key = currentItem.value as HashMap<*,*>
+                Log.i("TAG", "printing key")
+                Log.i("TAG", key.toString())
+
+
+
+                //key will return the Firebase ID
+                task.name = key.get("name") as String
+                task.rat =key.get("rat").toString().toFloat()
+                _taskList2!!.add(task)
+            }
+        }
+
+        //alert adapter that has changed
+        _adapterBar2.notifyDataSetChanged()
+
+    }
 
     var _taskListener: ValueEventListener = object : ValueEventListener {
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             loadTaskList(dataSnapshot)
+        }
+        override fun onCancelled(databaseError: DatabaseError) {
+            // Getting Item failed, log a message
+            Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
+        }
+    }
+
+
+    var _taskListener2: ValueEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            loadTaskList2(dataSnapshot)
         }
         override fun onCancelled(databaseError: DatabaseError) {
             // Getting Item failed, log a message

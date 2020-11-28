@@ -48,8 +48,8 @@ import com.google.firebase.database.FirebaseDatabase
                  val user_data = HashMap<String,String>()
                  user_data.put("ID",user!!.uid)
                  user!!.email?.let { user_data.put("Email" , it) }
-                 database!!.child("Users")!!.push().setValue(user_data)
-                 startActivity(Intent(this, BarView::class.java))
+                 user_data.get("ID")?.let { database!!.child("Users")!!.child(it).setValue(user_data) }
+                 startActivity(Intent(this, UserProfile::class.java))
 
                  // ...
              } else {
