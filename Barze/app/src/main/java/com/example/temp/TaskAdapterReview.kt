@@ -10,7 +10,8 @@ import android.widget.ImageButton
 import android.widget.TextView
 
 // This serves as the List adapter for the Reviews listview.
-class TaskAdapterReview(context: Context, taskList: MutableList<Review>) : BaseAdapter() {
+class
+TaskAdapterReview(context: Context, taskList: MutableList<Review>) : BaseAdapter() {
 
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
     private var _taskList = taskList

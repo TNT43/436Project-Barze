@@ -41,6 +41,10 @@
 
         <activity android:name=".SingleBarActivity"/>
 
+        <activity android:name=".UserProfile"/>
+
+        <activity android:name=".ReportVisit"/>
+
         <activity
             android:name=".LoginActivity">
             <intent-filter>
