@@ -128,6 +128,17 @@
         app:layout_constraintTop_toBottomOf="@id/review_list_view"
         />
 
+    <TextView
+        android:id="@+id/AverageWaitTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/quantum_black_text"
+        android:textSize="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnChoose" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

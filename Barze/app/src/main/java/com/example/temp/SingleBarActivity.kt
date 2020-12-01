@@ -15,6 +15,7 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
@@ -79,8 +80,64 @@ class SingleBarActivity : AppCompatActivity(){
         barNameTextView.text = barName
         barRatingView.text = barRating.toString()
 
-        // This part is to add Reviews to the bar
+        // Getting the average waiting time TextView, this will display by pulling data from firebase
+        val avgWait = findViewById<TextView>(R.id.AverageWaitTime)
+
+        // This part is to display Reviews to the bar
         database.child("Bars").child(barName).addValueEventListener(_taskListener)
+
+        // This listener calculates average wait time at a bar
+        database.child("WaitingTime").child(barName).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                var total = 0.0
+                val tasks = dataSnapshot.children.iterator()
+                var count =0.0
+                //Check if current database contains any collection
+                if (tasks.hasNext()) {
+
+                    _taskList!!.clear()
+
+
+                    val listIndex = tasks.next()
+                    val itemsIterator = listIndex.children.iterator()
+
+                    //check if the collection has any task or not
+                    while (itemsIterator.hasNext()) {
+
+                        Log.i("TAG", "Inside child iterator")
+
+                        count +=1
+
+                        //get current task
+                        val currentItem = itemsIterator.next()
+
+                        //get current data in a map
+                            val key = currentItem.value as HashMap<*,*>
+                        Log.i("Tag","Key for wait time is"+key.toString() )
+
+                        total = total + key.get("Waiting Time").toString().toDouble()
+                    }
+                }
+                if(count != (0).toDouble() ) {
+                    Log.i("Tag","Count is"+count.toString() )
+                    val averagewt = total / count
+                    avgWait.text = averagewt.toString()
+                }
+                else {
+                    val averagewt = "Waiting time not known"
+                    avgWait.text = averagewt
+                }
+
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
+                // ...
+            }
+        })
+
 
         val reviewButton = findViewById<Button>(R.id.ReviewAddButton)
         reviewButton.setOnClickListener {

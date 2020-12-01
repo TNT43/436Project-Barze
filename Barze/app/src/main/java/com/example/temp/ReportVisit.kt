@@ -32,7 +32,7 @@ class ReportVisit : AppCompatActivity(){
         waitSubmitButton.setOnClickListener {
             val user_data = HashMap<String, Float>()
             user_data.put("Waiting Time", waitingTimeInput.text.toString().toFloat())
-            database.child("WaitingTime").child(barName).push().setValue(user_data)
+            database.child("WaitingTime").child(barName).child("Times").push().setValue(user_data)
 
         }
 
