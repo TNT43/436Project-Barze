@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.tasks.Continuation
@@ -260,6 +262,24 @@ class UserProfile : AppCompatActivity(){
             // Getting Item failed, log a message
             Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
         }
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
+        // If you don't have res/menu, just create a directory named "menu" inside res
+        menuInflater.inflate(R.menu.action_bar_profileexcluded, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.title
+        if(id == "Bar List"){
+            startActivity(Intent(this, BarView::class.java))
+        }else if(id == "Map"){
+            startActivity(Intent(this, MapsActivity::class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 
 }

@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/Map"
+        android:title="Map"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/BarList"
+        android:title="Bar List"
+        app:showAsAction="always" />
+</menu>

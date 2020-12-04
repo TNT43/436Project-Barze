@@ -3,6 +3,8 @@ package com.example.temp
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.*
@@ -102,5 +104,23 @@ class BarView : AppCompatActivity(){
             // Getting Item failed, log a message
             Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
         }
+    }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
+        // If you don't have res/menu, just create a directory named "menu" inside res
+        menuInflater.inflate(R.menu.action_bar_listexcluded, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.title
+        if(id == "Map"){
+            startActivity(Intent(this, MapsActivity::class.java))
+        }else if(id == "Profile"){
+            startActivity(Intent(this, UserProfile::class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

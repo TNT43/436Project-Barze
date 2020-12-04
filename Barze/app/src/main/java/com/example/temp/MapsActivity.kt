@@ -11,8 +11,9 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Debug
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -31,6 +32,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -55,6 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     lateinit var barsInfo : HashMap<String, HashMap<String, Double>>
     private  var currentBar : String = ""
 
+    private lateinit var timedFunction : Timer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -88,12 +91,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // this will call a function every 60 seconds that will poll the firebase and update the
         // info snippets on the map markers
-        Timer().scheduleAtFixedRate(object : TimerTask() {
+        timedFunction = Timer()
+        timedFunction.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 JSONParser.updateInfo()
             }
         }, 10 * 1000, 10 * 1000) //put here time 1000 milliseconds=1 second
-
 
     }
     // this function is called when the google maps comes back to us ready to go (async)
@@ -166,6 +169,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // update the bar population as its listed on the firebase so that we can give users feedback
     // about wait times/popularity
     fun updateBarPop(){
+        if(lastKnownLocation == null || lastKnownLocation!!.latitude == null || lastKnownLocation!!.longitude == null){
+            return
+        }
         Log.i(TAG, "Updating Bar Pop")
          if(currentBar != ""){ // check if user was at a bar on the last check and update it
             // this will decrement a person from the bar they were previously at
@@ -195,9 +201,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }*/
         //Log.i(TAG, "ENDING OF UPDATEBARPOP")
     }
-    // this function goes through all the map markers on the map and changes the value in the info
-    // window to the proper amount of people example: (43 other users here -> 42 other users here)
-
 
     // location listener will get information about the device should it change
     // and update the global variable if needed and adjust where the map is looking
@@ -206,6 +209,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return object : LocationListener {
             // Called back when location changes
             override fun onLocationChanged(location: Location) {
+                Log.i(TAG, "Updating Location")
                 if(lastKnownLocation == null || location.accuracy <= lastKnownLocation!!.accuracy){
                     lastKnownLocation = location
                     map?.moveCamera(
@@ -278,6 +282,39 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return bm
     }
 
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
+        // If you don't have res/menu, just create a directory named "menu" inside res
+        menuInflater.inflate(R.menu.action_bar_mapexcluded, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.title
+        if(id == "Bar List"){
+            startActivity(Intent(this, BarView::class.java))
+        }else if(id == "Profile"){
+            startActivity(Intent(this, UserProfile::class.java))
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        onStop()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        barsInfo = HashMap() // make bars info empty
+        JSONParser.mapMarkers = ArrayList() // empty map markers
+        updateBarPop() // reupdate bar pop
+        // this is used to decrement 1 when the user leaves the map.
+        timedFunction.cancel()
+        timedFunction.purge()
+        finish()
+    }
     companion object {
         private const val TAG = "TAG"
         private const val DEFAULT_ZOOM = 15
