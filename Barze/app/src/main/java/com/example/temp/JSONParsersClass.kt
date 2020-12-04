@@ -93,7 +93,7 @@ import org.json.JSONObject
                             .position(latlng)
                             .title(name)
                             .snippet(barList[name]!!.toInt().toString() + " other users here")
-                            .icon(BitmapDescriptorFactory.fromBitmap(mMapActivityRef.writeTextOnDrawable(R.drawable.rectangle, rat.toString())))
+                            .icon(BitmapDescriptorFactory.fromBitmap(mMapActivityRef.createMarkers(R.drawable.rectangle, rat.toString())))
                     )
                     // add to list of map markers
                     // this is done so we can go back and change data on map markers later

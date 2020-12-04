@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.location.Location
@@ -11,6 +12,9 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.preference.Preference
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -31,6 +35,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -55,9 +60,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var JSONParser : JSONParsersClass //outsource parsing to clean up clutter
 
     lateinit var barsInfo : HashMap<String, HashMap<String, Double>>
-    private  var currentBar : String = ""
+    private lateinit var currentBar : String
 
     private lateinit var timedFunction : Timer
+
+    private lateinit var sharedPrefs : SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -66,7 +74,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // set up fireb
+
+        // store and keep track of the most recent bar the user visited this will allow us to more
+        // keep a more accurate count of users at a bar when they turn off the app/phone
+        sharedPrefs = this.getSharedPreferences("lastBar", Context.MODE_PRIVATE)
+        currentBar = sharedPrefs.getString("lastBar", "NONE").toString()
+        Log.i(TAG, "Last bar seen $currentBar")
+
+        // set up firebase
         database = FirebaseDatabase.getInstance().reference
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -97,6 +112,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 JSONParser.updateInfo()
             }
         }, 10 * 1000, 10 * 1000) //put here time 1000 milliseconds=1 second
+
 
     }
     // this function is called when the google maps comes back to us ready to go (async)
@@ -169,16 +185,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // update the bar population as its listed on the firebase so that we can give users feedback
     // about wait times/popularity
     fun updateBarPop(){
-        if(lastKnownLocation == null || lastKnownLocation!!.latitude == null || lastKnownLocation!!.longitude == null){
+        // due to asynchronous nature of data accumuluation ive had to put these here to make sure
+        // this is not run before everything else has had a chance to get things initialized
+        if(lastKnownLocation == null || lastKnownLocation!!.latitude == null || lastKnownLocation!!.longitude == null
+            || barsInfo == null || barsInfo.isEmpty()){
             return
         }
         Log.i(TAG, "Updating Bar Pop")
-         if(currentBar != ""){ // check if user was at a bar on the last check and update it
+         if(currentBar != "NONE"){ // check if user was at a bar on the last check and update it
             // this will decrement a person from the bar they were previously at
-            barsInfo.get(currentBar)!!.put("currPop", barsInfo.get(currentBar)!!.get("currPop")!! - 1)
+             barsInfo.get(currentBar)!!.put("currPop", barsInfo.get(currentBar)!!.get("currPop")!! - 1)
+             // update database
             database.child("Bars").child(currentBar).child("currPop").setValue(barsInfo.get(currentBar)!!.getValue("currPop"))
-            currentBar = ""
+            currentBar = "NONE"
+             sharedPrefs.edit().putString("lastBar", "NONE").commit()
         }
+        // yes this will create a a possible situation where you could decrement then increment the same bar
         for((name, hashmap) in barsInfo){
             // this will check to see if the user is within a certain range of the bar
             // if its 'close enough' ill count it as at that bar
@@ -188,6 +210,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 currentBar = name
                 hashmap.put("currPop", hashmap.get("currPop")!! + 1)
                 database.child("Bars").child(currentBar).child("currPop").setValue(barsInfo.get(currentBar)!!.getValue("currPop"))
+                sharedPrefs.edit().putString("lastBar", currentBar).commit()
             }
         }
         // this will update the snippet on the info window to reflect correct number of users at bar
@@ -226,7 +249,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {  }
 
-            override fun onProviderEnabled(provider: String) { Log.i(TAG, "hello : )")}
+            override fun onProviderEnabled(provider: String) { }
 
             override fun onProviderDisabled(provider: String) {  }
         }
@@ -258,27 +281,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // this function simply create a small box ui with the text of the bars rating in the center
     // it will return a bitmap that can be used to draw onto the map
-    fun writeTextOnDrawable(drawableId: Int, text: String): Bitmap? {
+    fun createMarkers(drawableId: Int, text: String): Bitmap {
         val drawable = this.applicationContext.getDrawable(drawableId)
         val bm = drawable?.toBitmap(width = 100, height = 100, config = null)
-        val tf: Typeface = Typeface.create("Helvetica", Typeface.BOLD)
         val paint = Paint()
         paint.style = Paint.Style.FILL
         paint.color = Color.WHITE
-        paint.typeface = tf
         paint.textAlign = Paint.Align.CENTER
         paint.textSize = 50F
-        val textRect = Rect()
-        paint.getTextBounds(text, 0, text.length, textRect)
-        val canvas = bm?.let { Canvas(it) }
-
-
-        //Calculate the positions
-        val xPos: Int = canvas!!.width / 2 - 2 //-2 is for regulating the x position offset
-
-        //"- ((paint.descent() + paint.ascent()) / 2)" is the distance from the baseline to the center.
-        val yPos = (canvas.height / 2 - (paint.descent() + paint.ascent()) / 2).toInt()
-        canvas.drawText(text, xPos.toFloat(), yPos.toFloat(), paint)
+        paint.isFakeBoldText = true
+        val canvas = Canvas(bm!!)
+        canvas.drawText(text, 50f,70f, paint)
         return bm
     }
 
@@ -307,10 +320,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onStop() {
         super.onStop()
-        barsInfo = HashMap() // make bars info empty
-        JSONParser.mapMarkers = ArrayList() // empty map markers
-        updateBarPop() // reupdate bar pop
-        // this is used to decrement 1 when the user leaves the map.
         timedFunction.cancel()
         timedFunction.purge()
         finish()
@@ -319,13 +328,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         private const val TAG = "TAG"
         private const val DEFAULT_ZOOM = 15
         private const val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
-
-        // Keys for storing activity state
-        private const val KEY_CAMERA_POSITION = "camera_position"
-        private const val KEY_LOCATION = "location"
-
-        // Used for selecting the current place.
-        private const val M_MAX_ENTRIES = 5
 
         //API Request types
         private const val FIND_BARS = 0
