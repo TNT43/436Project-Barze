@@ -208,7 +208,7 @@ class SingleBarActivity : AppCompatActivity(){
                     Log.i("tag", "Entered adding record, data is:" + data)
                     Log.i("tag", "Barname is"+barName)
                     val user = FirebaseAuth.getInstance().currentUser
-                    database.child("Images").child(barName).push().setValue(data)
+                    database.child("Images").child(barName).child("Images").push().setValue(data)
                     database.child("Images").child(user!!.uid).child("Bar_images").push().setValue(data)
 
                     Toast.makeText(this, "Upload completed", Toast.LENGTH_SHORT).show()
