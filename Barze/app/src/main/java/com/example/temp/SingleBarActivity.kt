@@ -3,7 +3,9 @@ package com.example.temp
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -35,7 +37,7 @@ class SingleBarActivity : AppCompatActivity(){
 
     private lateinit var database: DatabaseReference  // Firebase DB reference
 
-    val imagelist = arrayListOf<String>("R.drawable.barze.jpg")
+    val imagelist = arrayListOf<String>()
 
     lateinit var _adapterBar: TaskAdapterReview
 
@@ -78,45 +80,7 @@ class SingleBarActivity : AppCompatActivity(){
             startActivity(intent)
         }
 
-        //getting image urls
-        database.child("Images").child(barName).addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                Log.i("TAG","Inside ondatachange")
 
-                val tasks = dataSnapshot.children.iterator()
-                //Check if current database contains any collection
-                if (tasks.hasNext()) {
-
-                    _taskList!!.clear()
-
-
-                    val listIndex = tasks.next()
-                    val itemsIterator = listIndex.children.iterator()
-
-                    //check if the collection has any task or not
-                    while (itemsIterator.hasNext()) {
-
-                        Log.i("TAG", "Inside child iterator")
-
-
-                        //get current task
-                        val currentItem = itemsIterator.next()
-
-                        //get current data in a map
-                        val key = currentItem.value as HashMap<*, *>
-/////////// key.get("imageUrl") is the url
-                        Log.i("Lekha Debug",key.get("imageUrl").toString()+"-----------------")
-                        imagelist.add(key.get("imageUrl") as String)
-
-                    }
-                }
-            }
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
-                // ...
-            }
-        })
 
 
         // Setting the text views to display the above data
@@ -188,25 +152,86 @@ class SingleBarActivity : AppCompatActivity(){
             }
         })
 
+        //getting image urls
+        database.child("Images").child(barName).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                Log.i("TAG","Inside ondatachange")
+
+                val tasks = dataSnapshot.children.iterator()
+                //Check if current database contains any collection
+                if (tasks.hasNext()) {
+
+                    _taskList!!.clear()
 
 
-                val takenimage1 = imagelist.get(1) as Bitmap
-                val takenimage2 = imagelist.get(2) as Bitmap
-                val takenimage3 = imagelist.get(3) as Bitmap
-                val takenimage4 = imagelist.get(4) as Bitmap
-                val takenimage5 = imagelist.get(5) as Bitmap
+                    val listIndex = tasks.next()
+                    val itemsIterator = listIndex.children.iterator()
 
-                val iv1 = findViewById<ImageView>(R.id.imageView1)
-                val iv2 = findViewById<ImageView>(R.id.imageView2)
-                val iv3 = findViewById<ImageView>(R.id.imageView3)
-                val iv4 = findViewById<ImageView>(R.id.imageView4)
-                val iv5 = findViewById<ImageView>(R.id.imageView5)
+                    //check if the collection has any task or not
+                    while (itemsIterator.hasNext()) {
 
-                iv1.setImageBitmap(takenimage1)
-                iv2.setImageBitmap(takenimage2)
-                iv3.setImageBitmap(takenimage3)
-                iv4.setImageBitmap(takenimage4)
-                iv5.setImageBitmap(takenimage5)
+                        Log.i("TAG", "Inside child iterator")
+
+
+                        //get current task
+                        val currentItem = itemsIterator.next()
+
+                        //get current data in a map
+                        val key = currentItem.value as HashMap<*, *>
+                        Log.i("Debugg",key.get("imageUrl").toString()+"-----------------")
+                        imagelist.add(key.get("imageUrl").toString())
+
+                        if(imagelist.size == 1) {
+                            DownloadImageFromInternet(findViewById(R.id.imageView1)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 2){
+                            DownloadImageFromInternet(findViewById(R.id.imageView2)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 3){
+                            DownloadImageFromInternet(findViewById(R.id.imageView3)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 4){
+                            DownloadImageFromInternet(findViewById(R.id.imageView4)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 5){
+                            DownloadImageFromInternet(findViewById(R.id.imageView5)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else{
+                            // Do nothing
+                        }
+
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
+                // ...
+            }
+        })
+
+
+
 
         val reviewButton = findViewById<Button>(R.id.ReviewAddButton)
         reviewButton.setOnClickListener {
@@ -382,5 +407,27 @@ class SingleBarActivity : AppCompatActivity(){
             startActivity(Intent(this, BarView::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }
+
+
+    private inner class DownloadImageFromInternet(var imageView: ImageView) : AsyncTask<String, Void, Bitmap?>() {
+
+        override fun doInBackground(vararg urls: String): Bitmap? {
+            val imageURL = urls[0]
+            Log.i("Rohan","UrL is +"+imageURL)
+            var image: Bitmap? = null
+            try {
+                val `in` = java.net.URL(imageURL).openStream()
+                image = BitmapFactory.decodeStream(`in`)
+            }
+            catch (e: Exception) {
+                Log.e("Error Message", e.message.toString())
+                e.printStackTrace()
+            }
+            return image
+        }
+        override fun onPostExecute(result: Bitmap?) {
+            imageView.setImageBitmap(result)
+        }
     }
 }
