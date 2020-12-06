@@ -11,9 +11,9 @@ import com.google.firebase.database.*
 
 
 // This class represents every bar
-class Bar(var name: String, var lat: Float, var long: Float, var rat: Float){
+class Bar(var name: String, var pic: Int, var lat: Float, var long: Float, var rat: Float){
     companion object Factory {
-        fun create(): Bar = Bar("def",1.0F,1.0F, 5F)
+        fun create(): Bar = Bar("def",R.drawable.placeholder,1.0F,1.0F, 5F)
     }
 }
 
@@ -85,6 +85,8 @@ class BarView : AppCompatActivity(){
 
                 // Create and popultate the Bar object with the name and rating pulled from firebase.
                 task.name = map.get("name") as String
+                val matcher = BarMatch()
+                task.pic = matcher.MatchImageWithName(task.name)
                 task.rat   =map.get("rat").toString().toFloat() as Float
                 _taskList!!.add(task)
             }
