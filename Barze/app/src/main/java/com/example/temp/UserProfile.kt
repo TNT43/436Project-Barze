@@ -68,10 +68,10 @@ class UserProfile : AppCompatActivity(){
         mListView.adapter = _adapterBar
         mListView2.adapter = _adapterBar2
 
-        var proceedButton = findViewById<Button>(R.id.btnProceed)
+        /*var proceedButton = findViewById<Button>(R.id.btnProceed)
         proceedButton.setOnClickListener {
             startActivity(Intent(this, BarView::class.java))
-        }
+        }*/
 
         // menu
         bottomNavigationViewprofile.setOnNavigationItemSelectedListener {
@@ -90,13 +90,13 @@ class UserProfile : AppCompatActivity(){
 
 
         // This part handles image uploading by user for profile
-        val btnUpload = findViewById<Button>(R.id.btnUpload2)
+        /*val btnUpload = findViewById<Button>(R.id.btnUpload2)
         val btnChoose = findViewById<Button>(R.id.btnChoose2)
-        imageView = findViewById<ImageView>(R.id.imgView2)
+        imageView = findViewById<ImageView>(R.id.imgView2)*/
 
         storageReference = FirebaseStorage.getInstance().reference
 
-        btnChoose.setOnClickListener {
+       /* btnChoose.setOnClickListener {
             Log.i("Tag", "Choose cliekd")
             launchGallery()
         }
@@ -104,7 +104,7 @@ class UserProfile : AppCompatActivity(){
         btnUpload.setOnClickListener {
             uploadImage()
         }
-
+*/
     }
 
 
