@@ -20,6 +20,7 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import kotlinx.android.synthetic.main.singlebar_view.*
 import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
@@ -65,6 +66,16 @@ class SingleBarActivity : AppCompatActivity(){
 
         mListView.adapter = _adapterBar
 
+        //menu
+        bottomNavigationViewsingle.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> startProfile()
+                R.id.bars_list -> startList()
+                R.id.bars_map -> startmap()
+
+            }
+            true
+        }
 
         // Get bar name and rating from intent // this is where information specific to the bar should be extracted
         val intent = getIntent()
@@ -95,7 +106,7 @@ class SingleBarActivity : AppCompatActivity(){
         val avgWait = findViewById<TextView>(R.id.AverageWaitTime)
 
         // This part is to display Reviews to the bar
-        database.child("Bars").child(barName).addValueEventListener(_taskListener)
+        database.child("Bars").child(barName).orderByKey().addValueEventListener(_taskListener)
 
         // This listener calculates average wait time at a bar
         database.child("WaitingTime").child(barName).addValueEventListener(object : ValueEventListener {
@@ -390,7 +401,7 @@ class SingleBarActivity : AppCompatActivity(){
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+   /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
         // If you don't have res/menu, just create a directory named "menu" inside res
         menuInflater.inflate(R.menu.action_bar, menu)
@@ -407,8 +418,19 @@ class SingleBarActivity : AppCompatActivity(){
             startActivity(Intent(this, BarView::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }*/
+
+    private fun startList(){
+        startActivity(Intent(this, BarView::class.java))
     }
 
+    private fun startmap(){
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    private fun startProfile(){
+        startActivity(Intent(this, UserProfile::class.java))
+    }
 
     private inner class DownloadImageFromInternet(var imageView: ImageView) : AsyncTask<String, Void, Bitmap?>() {
 

@@ -35,6 +35,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+
+import kotlinx.android.synthetic.main.activity_maps.*
 import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
@@ -73,6 +75,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        //menu
+        bottomNavigationViewmap.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> startProfile()
+                R.id.bars_list -> startList()
+                R.id.bars_map -> startmap()
+
+            }
+            true
+        }
 
 
         // store and keep track of the most recent bar the user visited this will allow us to more
@@ -296,7 +309,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
         // If you don't have res/menu, just create a directory named "menu" inside res
         menuInflater.inflate(R.menu.action_bar_mapexcluded, menu)
@@ -311,6 +324,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(Intent(this, UserProfile::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }*/
+
+    private fun startList(){
+        startActivity(Intent(this, BarView::class.java))
+    }
+
+    private fun startmap(){
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    private fun startProfile(){
+        startActivity(Intent(this, UserProfile::class.java))
     }
 
     override fun onPause() {

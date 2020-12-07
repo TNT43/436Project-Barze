@@ -17,6 +17,7 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import kotlinx.android.synthetic.main.userprofile.*
 import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
@@ -72,6 +73,16 @@ class UserProfile : AppCompatActivity(){
             startActivity(Intent(this, BarView::class.java))
         }
 
+        // menu
+        bottomNavigationViewprofile.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> startProfile()
+                R.id.bars_list -> startList()
+                R.id.bars_map -> startmap()
+
+            }
+            true
+        }
         // Setting the text views to display the above data
         val userEmailView =findViewById<TextView>(R.id.useremailtextview)
         userEmailView.text = FirebaseAuth.getInstance().currentUser!!.email
@@ -232,7 +243,9 @@ class UserProfile : AppCompatActivity(){
 
 
                 //key will return the Firebase ID
+                val matcher = BarMatch()
                 task.name = key.get("name") as String
+                task.pic = matcher.MatchImageWithName(task.name)
                 task.rat =key.get("rat").toString().toFloat()
                 _taskList2!!.add(task)
             }
@@ -265,14 +278,29 @@ class UserProfile : AppCompatActivity(){
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
         // If you don't have res/menu, just create a directory named "menu" inside res
         menuInflater.inflate(R.menu.action_bar_profileexcluded, menu)
         return super.onCreateOptionsMenu(menu)
+
+        //menuInflater.inflate(R.menu.bottom_nav_menu, menu)
+
+    }*/
+
+    private fun startList(){
+        startActivity(Intent(this, BarView::class.java))
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    private fun startmap(){
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    private fun startProfile(){
+        startActivity(Intent(this, UserProfile::class.java))
+    }
+
+    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.title
         if(id == "Bar List"){
             startActivity(Intent(this, BarView::class.java))
@@ -280,6 +308,7 @@ class UserProfile : AppCompatActivity(){
             startActivity(Intent(this, MapsActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
-    }
+    }*/
+
 
 }

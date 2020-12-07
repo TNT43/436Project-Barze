@@ -37,6 +37,7 @@
             android:label="@string/title_activity_maps">
         </activity>
 
+
         <activity android:name=".BarView"/>
 
         <activity android:name=".SingleBarActivity"/>
@@ -44,6 +45,7 @@
         <activity android:name=".UserProfile"/>
 
         <activity android:name=".ReportVisit"/>
+
 
         <activity
             android:name=".LoginActivity">

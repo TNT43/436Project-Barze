@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.*
+import kotlinx.android.synthetic.main.bar_view.*
 
 
 // This class represents every bar
@@ -43,6 +44,17 @@ class BarView : AppCompatActivity(){
 
        // Adding listener to the database, this will handle reading all of the Bars from Firebase.
         database.orderByKey().addValueEventListener(_taskListener)
+
+        // menu
+        bottomNavigationViewbar.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> startProfile()
+                R.id.bars_list -> startList()
+                R.id.bars_map -> startmap()
+
+            }
+            true
+        }
 
         // Handling behavior for when one of the bars on tbe list is clicked. This opens the SingleBarActivity.kt,
         // passing the bar name and rating in the intent.
@@ -109,12 +121,13 @@ class BarView : AppCompatActivity(){
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+  /*  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
         // If you don't have res/menu, just create a directory named "menu" inside res
         menuInflater.inflate(R.menu.action_bar_listexcluded, menu)
         return super.onCreateOptionsMenu(menu)
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.title
@@ -124,5 +137,16 @@ class BarView : AppCompatActivity(){
             startActivity(Intent(this, UserProfile::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }*/
+    private fun startList(){
+        startActivity(Intent(this, BarView::class.java))
+    }
+
+    private fun startmap(){
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    private fun startProfile(){
+        startActivity(Intent(this, UserProfile::class.java))
     }
 }
