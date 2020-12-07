@@ -313,13 +313,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onPause() {
-        super.onPause()
-        onStop()
-    }
-
     override fun onStop() {
         super.onStop()
+        Log.i(TAG, "In onStop")
         timedFunction.cancel()
         timedFunction.purge()
         finish()
