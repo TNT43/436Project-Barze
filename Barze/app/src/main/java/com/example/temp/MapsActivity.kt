@@ -117,8 +117,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         barsInfo = HashMap<String, HashMap<String, Double>>()
 
-        timedFunction = Timer()
-
     }
     // this function is called when the google maps comes back to us ready to go (async)
     // this will tell us the map if ready to be worked on. Sometimes the user won't have given
@@ -317,6 +315,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // info snippets on the map markers
         Log.i(TAG, "In on resume")
         super.onResume()
+        timedFunction = Timer()
         timedFunction.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 JSONParser.updateInfo()
