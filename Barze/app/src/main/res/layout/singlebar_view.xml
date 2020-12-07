@@ -1,144 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:text="Bar Name"
-        android:textColor="@color/quantum_black_text"
-        android:textSize="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/singlebartextview"
-        tools:layout_editor_absoluteX="0dp" />
 
     <TextView
         android:id="@+id/singlebartextview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="112dp"
+        android:layout_marginTop="20dp"
         android:textColor="#86AD33"
-        android:textSize="20dp"
+        android:textSize="30dp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="match_parent"
+        android:layout_marginTop="2dp"
+        android:layout_height="200dp"
+        app:layout_constraintBottom_toTopOf="@id/ratings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/singlebartextview">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:contentDescription="bar images"
+                app:srcCompat="@drawable/bents" />
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:contentDescription="bar images"
+                app:srcCompat="@drawable/placeholder" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:contentDescription="bar images"
+                app:srcCompat="@drawable/com" />
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:contentDescription="bar images"
+                app:srcCompat="@drawable/placeholder" />
+
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:contentDescription="bar images"
+                app:srcCompat="@drawable/placeholder" />
+        </LinearLayout>
+    </ScrollView>
+
     <TextView
+        android:id="@+id/ratings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="76dp"
-        android:text="Bar Rating"
+        android:text="Ratings:"
         android:textColor="@color/quantum_black_text"
-        android:textSize="30dp"
-        app:layout_constraintBottom_toTopOf="@+id/singlebarratingview"
-        tools:layout_editor_absoluteX="0dp" />
+        android:textSize="20dp"
+        app:layout_constraintBottom_toTopOf="@id/BarReviewLabel"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollView2" />
+
 
     <TextView
         android:id="@+id/singlebarratingview"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="144dp"
         android:textColor="#86AD33"
         android:textSize="20dp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/BarReviewLabel"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/singlebartextview" />
+        app:layout_constraintTop_toBottomOf="@id/ratings" />
 
     <TextView
         android:id="@+id/BarReviewLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="36dp"
-        android:text="Bar Reviews Here"
+        android:text="Reviews:"
         android:textColor="@color/quantum_black_text"
-        android:textSize="30dp"
+        android:textSize="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/singlebarratingview" />
+        app:layout_constraintTop_toBottomOf="@+id/ratings" />
 
     <EditText
         android:id="@+id/ReviewInput"
-        android:text="Enter review here"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:text="Enter review here"
+        app:layout_constraintBottom_toTopOf="@+id/ReviewAddButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/BarReviewLabel"
-        tools:layout_editor_absoluteX="0dp" />
+        />
 
     <Button
         android:id="@+id/ReviewAddButton"
         android:layout_width="200dp"
-        android:text="@string/click_to_add_review"
         android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="123dp"
+        android:layout_marginBottom="28dp"
+        android:text="@string/click_to_add_review"
+        app:layout_constraintBottom_toTopOf="@+id/review_list_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ReviewInput"
-        tools:ignore="MissingConstraints" />
+         />
 
     <ListView
         android:id="@+id/review_list_view"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_marginTop="28dp"
-        app:layout_constraintTop_toBottomOf="@id/ReviewAddButton"
-        tools:layout_editor_absoluteX="12dp" />
-
-    <Button
-        android:id="@+id/btnChoose"
-        android:text="Choose"
-        android:layout_weight="1"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/review_list_view"
-        />
+        app:layout_constraintTop_toBottomOf="@id/ReviewAddButton" />
 
-    <Button
-        android:id="@+id/btnUpload"
-        android:layout_width="0dp"
+
+    <LinearLayout
+        android:id="@+id/button_holder"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/review_list_view">
+
+        <Button
+            android:id="@+id/btnChoose"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Choose"
+            app:layout_constraintBottom_toBottomOf="@id/button_holder"
+            app:layout_constraintEnd_toStartOf="@id/btnUpload"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/button_holder" />
+
+        <Button
+            android:id="@+id/btnUpload"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Upload"
+            app:layout_constraintBottom_toBottomOf="@id/button_holder"
+            app:layout_constraintEnd_toStartOf="@id/btnVisit"
+            app:layout_constraintStart_toEndOf="@id/btnChoose"
+            app:layout_constraintTop_toTopOf="@id/button_holder" />
+
+        <Button
+            android:id="@+id/btnVisit"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Record Visit"
+            app:layout_constraintBottom_toBottomOf="@id/button_holder"
+            app:layout_constraintEnd_toEndOf="@id/imgView"
+            app:layout_constraintStart_toEndOf="@id/btnUpload"
+            app:layout_constraintTop_toTopOf="@id/button_holder" />
+
+        <ImageView
+            android:id="@+id/imgView"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintBottom_toBottomOf="@id/button_holder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnVisit"
+            app:layout_constraintTop_toTopOf="@id/button_holder" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/AverageWaitLabel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Upload"
-        app:layout_constraintStart_toEndOf="@id/btnChoose"
-        app:layout_constraintTop_toBottomOf="@id/review_list_view"
-        tools:layout_editor_absoluteX="298dp" />
-
-    <Button
-        android:id="@+id/btnVisit"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Record Visit"
-        app:layout_constraintStart_toEndOf="@id/btnUpload"
-        app:layout_constraintTop_toBottomOf="@id/review_list_view"
-        tools:layout_editor_absoluteX="298dp" />
-
-    <ImageView
-        android:id="@+id/imgView"
-        android:layout_width="80dp"
-        android:layout_height="40dp"
-        app:layout_constraintStart_toEndOf="@id/btnUpload"
-        app:layout_constraintTop_toBottomOf="@id/review_list_view"
+        android:text="Wait: "
+        android:textColor="@color/quantum_black_text"
+        android:textSize="20dp"
+        app:layout_constraintEnd_toStartOf="@id/AverageWaitTime"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_holder"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationViewsingle"
         />
 
     <TextView
         android:id="@+id/AverageWaitTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textColor="@color/quantum_black_text"
+        android:textColor="@color/places_autocomplete_progress_tint"
         android:textSize="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/AverageWaitLabel"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationViewsingle"
+        app:layout_constraintTop_toBottomOf="@id/button_holder" />
+
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationViewsingle"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnChoose" />
-
-
+        app:layout_constraintTop_toBottomOf="@+id/AverageWaitTime"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>

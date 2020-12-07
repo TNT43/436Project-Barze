@@ -2,7 +2,10 @@ package com.example.temp
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -17,6 +20,7 @@ import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import kotlinx.android.synthetic.main.singlebar_view.*
 import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
@@ -33,6 +37,8 @@ class Review(var name: String, var review: String){
 class SingleBarActivity : AppCompatActivity(){
 
     private lateinit var database: DatabaseReference  // Firebase DB reference
+
+    val imagelist = arrayListOf<String>()
 
     lateinit var _adapterBar: TaskAdapterReview
 
@@ -60,6 +66,16 @@ class SingleBarActivity : AppCompatActivity(){
 
         mListView.adapter = _adapterBar
 
+        //menu
+        bottomNavigationViewsingle.setOnNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> startProfile()
+                R.id.bars_list -> startList()
+                R.id.bars_map -> startmap()
+
+            }
+            true
+        }
 
         // Get bar name and rating from intent // this is where information specific to the bar should be extracted
         val intent = getIntent()
@@ -76,17 +92,21 @@ class SingleBarActivity : AppCompatActivity(){
         }
 
 
+
+
         // Setting the text views to display the above data
         val barNameTextView =findViewById<TextView>(R.id.singlebartextview)
         val barRatingView = findViewById<TextView>(R.id.singlebarratingview)
         barNameTextView.text = barName
         barRatingView.text = barRating.toString()
 
+
+
         // Getting the average waiting time TextView, this will display by pulling data from firebase
         val avgWait = findViewById<TextView>(R.id.AverageWaitTime)
 
         // This part is to display Reviews to the bar
-        database.child("Bars").child(barName).addValueEventListener(_taskListener)
+        database.child("Bars").child(barName).orderByKey().addValueEventListener(_taskListener)
 
         // This listener calculates average wait time at a bar
         database.child("WaitingTime").child(barName).addValueEventListener(object : ValueEventListener {
@@ -133,12 +153,95 @@ class SingleBarActivity : AppCompatActivity(){
 
             }
 
+
+
+
             override fun onCancelled(databaseError: DatabaseError) {
                 // Getting Post failed, log a message
                 Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
                 // ...
             }
         })
+
+        //getting image urls
+        database.child("Images").child(barName).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                Log.i("TAG","Inside ondatachange")
+
+                val tasks = dataSnapshot.children.iterator()
+                //Check if current database contains any collection
+                if (tasks.hasNext()) {
+
+                    _taskList!!.clear()
+
+
+                    val listIndex = tasks.next()
+                    val itemsIterator = listIndex.children.iterator()
+
+                    //check if the collection has any task or not
+                    while (itemsIterator.hasNext()) {
+
+                        Log.i("TAG", "Inside child iterator")
+
+
+                        //get current task
+                        val currentItem = itemsIterator.next()
+
+                        //get current data in a map
+                        val key = currentItem.value as HashMap<*, *>
+                        Log.i("Debugg",key.get("imageUrl").toString()+"-----------------")
+                        imagelist.add(key.get("imageUrl").toString())
+
+                        if(imagelist.size == 1) {
+                            DownloadImageFromInternet(findViewById(R.id.imageView1)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 2){
+                            DownloadImageFromInternet(findViewById(R.id.imageView2)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 3){
+                            DownloadImageFromInternet(findViewById(R.id.imageView3)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 4){
+                            DownloadImageFromInternet(findViewById(R.id.imageView4)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else if(imagelist.size == 5){
+                            DownloadImageFromInternet(findViewById(R.id.imageView5)).execute(
+                                key.get(
+                                    "imageUrl"
+                                ).toString()
+                            )
+                        }
+                        else{
+                            // Do nothing
+                        }
+
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
+                // ...
+            }
+        })
+
+
 
 
         val reviewButton = findViewById<Button>(R.id.ReviewAddButton)
@@ -208,7 +311,7 @@ class SingleBarActivity : AppCompatActivity(){
                     Log.i("tag", "Entered adding record, data is:" + data)
                     Log.i("tag", "Barname is"+barName)
                     val user = FirebaseAuth.getInstance().currentUser
-                    database.child("Images").child(barName).push().setValue(data)
+                    database.child("Images").child(barName).child("Images").push().setValue(data)
                     database.child("Images").child(user!!.uid).child("Bar_images").push().setValue(data)
 
                     Toast.makeText(this, "Upload completed", Toast.LENGTH_SHORT).show()
@@ -298,7 +401,7 @@ class SingleBarActivity : AppCompatActivity(){
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+   /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
         // If you don't have res/menu, just create a directory named "menu" inside res
         menuInflater.inflate(R.menu.action_bar, menu)
@@ -315,5 +418,38 @@ class SingleBarActivity : AppCompatActivity(){
             startActivity(Intent(this, BarView::class.java))
         }
         return super.onOptionsItemSelected(item)
+    }*/
+
+    private fun startList(){
+        startActivity(Intent(this, BarView::class.java))
+    }
+
+    private fun startmap(){
+        startActivity(Intent(this, MapsActivity::class.java))
+    }
+
+    private fun startProfile(){
+        startActivity(Intent(this, UserProfile::class.java))
+    }
+
+    private inner class DownloadImageFromInternet(var imageView: ImageView) : AsyncTask<String, Void, Bitmap?>() {
+
+        override fun doInBackground(vararg urls: String): Bitmap? {
+            val imageURL = urls[0]
+            Log.i("Rohan","UrL is +"+imageURL)
+            var image: Bitmap? = null
+            try {
+                val `in` = java.net.URL(imageURL).openStream()
+                image = BitmapFactory.decodeStream(`in`)
+            }
+            catch (e: Exception) {
+                Log.e("Error Message", e.message.toString())
+                e.printStackTrace()
+            }
+            return image
+        }
+        override fun onPostExecute(result: Bitmap?) {
+            imageView.setImageBitmap(result)
+        }
     }
 }

@@ -23,7 +23,7 @@ TaskAdapterReview(context: Context, taskList: MutableList<Review>) : BaseAdapter
         val view: View
         val listRowHolder: ListRowHolder
         if (convertView == null) {
-            view = _inflater.inflate(R.layout.bar_list_item, parent, false)
+            view = _inflater.inflate(R.layout.review_single_item, parent, false)
             listRowHolder = ListRowHolder(view)
             view.tag = listRowHolder
         } else {
@@ -49,7 +49,7 @@ TaskAdapterReview(context: Context, taskList: MutableList<Review>) : BaseAdapter
     }
 
     private class ListRowHolder(row: View?) {
-        val desc: TextView = row!!.findViewById(R.id.bar_text_view) as TextView
+        val desc: TextView = row!!.findViewById(R.id.review_text_view) as TextView
 
     }
 }
