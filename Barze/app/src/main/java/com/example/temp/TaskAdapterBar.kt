@@ -13,9 +13,9 @@ class TaskAdapterBar(context: Context, taskList: MutableList<Bar>) : BaseAdapter
     private val _inflater: LayoutInflater = LayoutInflater.from(context)
     private var _taskList = taskList
 
+    // The single view inflated for a single bar item in the list
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
 
-        // itemText will be displayed on the textview
         val itemText: String = _taskList.get(position).name as String
         val itemImage: Int = _taskList.get(position).pic
 

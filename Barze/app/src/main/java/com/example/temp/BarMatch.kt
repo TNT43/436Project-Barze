@@ -4,6 +4,7 @@ import android.widget.Toast
 
 public class BarMatch {
 
+    // Utility to handle displaying of stock photos for bars in College Park
     public fun MatchImageWithName(name:String): Int {
         when(name) {
             "Buffalo Wild Wings" -> return R.drawable.bww

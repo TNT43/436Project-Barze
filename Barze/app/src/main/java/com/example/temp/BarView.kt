@@ -11,41 +11,36 @@ import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.bar_view.*
 
 
-// This class represents every bar
+// This class represents every individual bar stored in Firebase, with names, ratings and locations
 class Bar(var name: String, var pic: Int, var lat: Float, var long: Float, var rat: Float){
     companion object Factory {
         fun create(): Bar = Bar("def",R.drawable.placeholder,1.0F,1.0F, 5F)
     }
 }
 
-// This activity will list all of the bars on the page
+// This activity will list all of the bars stored in Firebase, that represent CP bars
 class BarView : AppCompatActivity(){
 
     private lateinit var database: DatabaseReference  // Firebase DB reference
 
-    lateinit var _adapterBar: TaskAdapterBar
+    lateinit var _adapterBar: TaskAdapterBar  // Adapter for List view reference
 
-    var _taskList: MutableList<Bar>? = null
+    var _taskList: MutableList<Bar>? = null // list that will process each bar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.bar_view)
 
+        // initializing references
         _taskList = mutableListOf()
-
         database = FirebaseDatabase.getInstance().reference
-
-        var mListView = findViewById<ListView>(R.id.list_view);
-
         _adapterBar = TaskAdapterBar(this, _taskList!!)
 
+        // This list view will contain all of the bars
+        var mListView = findViewById<ListView>(R.id.list_view);
         mListView.adapter = _adapterBar
 
-
-       // Adding listener to the database, this will handle reading all of the Bars from Firebase.
-        database.orderByKey().addValueEventListener(_taskListener)
-
-        // menu
+        // menu for navigation at bottom
         bottomNavigationViewbar.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.profile -> startProfile()
@@ -56,13 +51,17 @@ class BarView : AppCompatActivity(){
             true
         }
 
+        // Adding listener to the database, this will handle reading all of the Bars from Firebase.
+        database.orderByKey().addValueEventListener(_taskListener)
+
+
         // Handling behavior for when one of the bars on tbe list is clicked. This opens the SingleBarActivity.kt,
         // passing the bar name and rating in the intent.
         mListView.setOnItemClickListener{
                 parent, view, position, id ->
             val element = _taskList!![position] // The item that was clicked
             val intent = Intent(this, SingleBarActivity::class.java)
-            Log.i("TAG", "putthign this in intent "+element.name +" "+ element.rat)
+            Log.i("TAG", "Putting  this in intent "+element.name +" "+ element.rat)
             intent.putExtra("BarName", element.name)
             intent.putExtra("BarRating", element.rat)
             startActivity(intent)
@@ -70,9 +69,20 @@ class BarView : AppCompatActivity(){
 
     }
 
-    // This function creates the list of bars that are stored internally.
+    // This listener is bound to Firebase and listens for events to display Bars
+    var _taskListener: ValueEventListener = object : ValueEventListener {
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            loadTaskList(dataSnapshot)
+        }
+        override fun onCancelled(databaseError: DatabaseError) {
+            // Getting Item failed, log a message
+            Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
+        }
+    }
+
+    // This function creates the list of bars that are stored internally and is called by the Firebase listener
     private fun loadTaskList(dataSnapshot: DataSnapshot) {
-        Log.d("TAG", "loadTaskList")
+        Log.d("TAG", "loadTaskList for Bar list")
 
         val tasks = dataSnapshot.children.iterator()
 
@@ -109,35 +119,7 @@ class BarView : AppCompatActivity(){
 
     }
 
-
-    var _taskListener: ValueEventListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            loadTaskList(dataSnapshot)
-        }
-        override fun onCancelled(databaseError: DatabaseError) {
-            // Getting Item failed, log a message
-            Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
-        }
-    }
-
-
-  /*  override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
-        // If you don't have res/menu, just create a directory named "menu" inside res
-        menuInflater.inflate(R.menu.action_bar_listexcluded, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.title
-        if(id == "Map"){
-            startActivity(Intent(this, MapsActivity::class.java))
-        }else if(id == "Profile"){
-            startActivity(Intent(this, UserProfile::class.java))
-        }
-        return super.onOptionsItemSelected(item)
-    }*/
+    // Following methods are for the bottom navigation bar
     private fun startList(){
         //startActivity(Intent(this, BarView::class.java))
     }
