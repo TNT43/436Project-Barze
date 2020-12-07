@@ -1,81 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <TextView
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="72dp"
-            android:text="User Email"
-            android:textColor="@color/quantum_black_text"
-            android:textSize="30dp"
-            app:layout_constraintBottom_toTopOf="@+id/useremailtextview"
-            tools:layout_editor_absoluteX="0dp" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+             android:background="#FFFDF7">
+
+
+    <TextView
+        android:id="@+id/userlabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:text="Hey There!"
+        android:textColor="@color/quantum_black_text"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/useremailtextview"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/useremailtextview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="112dp"
-            android:textColor="#86AD33"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/quantum_black_text"
+            android:gravity="center"
             android:textSize="20dp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/userlabel"
+            app:layout_constraintBottom_toTopOf ="@id/FavoritesLabel"
+            />
 
+        <TextView
+        android:id="@+id/FavoritesLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Your Favorite Bars:"
+        android:gravity="center"
+        android:textColor="@color/quantum_black_text"
+        android:textSize="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/useremailtextview"
+        app:layout_constraintBottom_toTopOf="@id/UserReviewLabel"/>
 
-
+     <ListView
+        android:id="@+id/favorites_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginTop="5dp"
+         android:background="@drawable/border_ui"
+         app:layout_constraintEnd_toEndOf="parent"
+         app:layout_constraintStart_toStartOf="parent"
+         app:layout_constraintTop_toBottomOf="@id/FavoritesLabel"
+         app:layout_constraintBottom_toTopOf="@id/UserReviewLabel"
+        />
 
         <TextView
             android:id="@+id/UserReviewLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="36dp"
-            android:text="User Reviews Here"
+            android:layout_marginTop="5dp"
+            android:text="Your Reviews:"
+            android:gravity="center"
             android:textColor="@color/quantum_black_text"
-            android:textSize="30dp"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/useremailtextview" />
+            app:layout_constraintTop_toBottomOf="@id/favorites_list_view"
+            app:layout_constraintBottom_toTopOf="@id/user_review_list_view" />
 
 
-        <TextView
-            android:id="@+id/FavoritesLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="36dp"
-            android:text="User Favorites here"
-            android:textColor="@color/quantum_black_text"
-            android:textSize="30dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnChoose2" />
+
 
         <ListView
             android:id="@+id/user_review_list_view"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="28dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/border_ui"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/UserReviewLabel"
-            tools:layout_editor_absoluteX="12dp" />
+            app:layout_constraintBottom_toTopOf="@id/bottomNavigationViewprofile" />
 
-        <ListView
-            android:id="@+id/favorites_list_view"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="28dp"
-            app:layout_constraintTop_toBottomOf="@id/FavoritesLabel"
-           />
 
-        <Button
+
+        <!--<Button
             android:id="@+id/btnChoose2"
             android:text="Choose"
             android:layout_weight="1"
@@ -112,17 +135,17 @@
             android:text="Proceed"
             app:layout_constraintTop_toBottomOf="@id/favorites_list_view"
             tools:ignore="MissingConstraints" />
+-->
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationViewprofile"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationViewprofile"
-            android:layout_width="match_parent"
-            android:layout_height="75dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:menu="@menu/bottom_nav_menu"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+</LinearLayout>

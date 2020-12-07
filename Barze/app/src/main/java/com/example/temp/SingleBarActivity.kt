@@ -25,6 +25,7 @@ import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.math.round
 
 // This class represents a Review object. It currently stores the user who created the review, and the review itself.
 class Review(var name: String, var review: String){
@@ -94,6 +95,7 @@ class SingleBarActivity : AppCompatActivity(){
 
 
 
+
         // Setting the text views to display the above data
         val barNameTextView =findViewById<TextView>(R.id.singlebartextview)
         val barRatingView = findViewById<TextView>(R.id.singlebarratingview)
@@ -102,14 +104,67 @@ class SingleBarActivity : AppCompatActivity(){
 
 
 
+
         // Getting the average waiting time TextView, this will display by pulling data from firebase
         val avgWait = findViewById<TextView>(R.id.AverageWaitTime)
 
         // This part is to display Reviews to the bar
-        database.child("Bars").child(barName).orderByKey().addValueEventListener(_taskListener)
+        database.child("Bars").child(barName).orderByKey().addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                Log.d("TAG", "loadTaskList for reviews")
+
+        val tasks = dataSnapshot.children.iterator()
+
+
+        //Check if current database contains any collection
+        if (tasks.hasNext()) {
+
+            _taskList!!.clear()
+
+
+            val listIndex = tasks.next()
+            val itemsIterator = listIndex.children.iterator()
+
+            //check if the collection has any task or not
+            while (itemsIterator.hasNext()) {
+
+                //get current task
+                val currentItem = itemsIterator.next()
+                val task = Review.create()
+
+                //get current data in a map
+                val key = currentItem.value as HashMap<*,*>
+                Log.i("TAG", "printing key")
+                Log.i("TAG", key.toString())
+
+
+
+                //key will return the Firebase ID
+                task.name = key.get("User") as String
+                task.review =key.get("Review") as String
+                _taskList!!.add(task)
+            }
+        }
+
+        //alert adapter that has changed
+        _adapterBar.notifyDataSetChanged()
+
+            }
+
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException())
+                // ...
+            }
+        })
+
+
+
 
         // This listener calculates average wait time at a bar
-        database.child("WaitingTime").child(barName).addValueEventListener(object : ValueEventListener {
+        database.child("WaitingTime").child(barName).orderByKey().addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                 var total = 0.0
@@ -118,7 +173,6 @@ class SingleBarActivity : AppCompatActivity(){
                 //Check if current database contains any collection
                 if (tasks.hasNext()) {
 
-                    _taskList!!.clear()
 
 
                     val listIndex = tasks.next()
@@ -144,7 +198,7 @@ class SingleBarActivity : AppCompatActivity(){
                 if(count != (0).toDouble() ) {
                     Log.i("Tag","Count is"+count.toString() )
                     val averagewt = total / count
-                    avgWait.text = averagewt.toString()
+                    avgWait.text = "Waiting time is: "+ round(averagewt) +" minutes"
                 }
                 else {
                     val averagewt = "Waiting time not known"
@@ -172,7 +226,6 @@ class SingleBarActivity : AppCompatActivity(){
                 //Check if current database contains any collection
                 if (tasks.hasNext()) {
 
-                    _taskList!!.clear()
 
 
                     val listIndex = tasks.next()
@@ -233,6 +286,7 @@ class SingleBarActivity : AppCompatActivity(){
 
                     }
                 }
+
             }
             override fun onCancelled(databaseError: DatabaseError) {
                 // Getting Post failed, log a message
@@ -252,7 +306,6 @@ class SingleBarActivity : AppCompatActivity(){
 
                 var reviewHolder = HashMap<String, String>()
                 user!!.email?.let { it1 -> reviewHolder.put("User", it1) }
-                // TODO - Push this review under the user in the users db for firebase.
                 reviewHolder.put("Review",reviewText)
                 database.child("Bars").child(barName).child("Reviews").push().setValue(reviewHolder)
                 database.child("Reviews").child(user!!.uid).child("Reviews").push().setValue(reviewHolder)
@@ -348,57 +401,57 @@ class SingleBarActivity : AppCompatActivity(){
         }
     }
 
-    private fun loadTaskList(dataSnapshot: DataSnapshot) {
-        Log.d("TAG", "loadTaskList for reviews")
-
-        val tasks = dataSnapshot.children.iterator()
-
-
-        //Check if current database contains any collection
-        if (tasks.hasNext()) {
-
-            _taskList!!.clear()
-
-
-            val listIndex = tasks.next()
-            val itemsIterator = listIndex.children.iterator()
-
-            //check if the collection has any task or not
-            while (itemsIterator.hasNext()) {
-
-                //get current task
-                val currentItem = itemsIterator.next()
-                val task = Review.create()
-
-                //get current data in a map
-                val key = currentItem.value as HashMap<*,*>
-                Log.i("TAG", "printing key")
-                Log.i("TAG", key.toString())
-
-
-
-                //key will return the Firebase ID
-                task.name = key.get("User") as String
-                task.review =key.get("Review") as String
-                _taskList!!.add(task)
-            }
-        }
-
-        //alert adapter that has changed
-        _adapterBar.notifyDataSetChanged()
-
-    }
-
-
-    var _taskListener: ValueEventListener = object : ValueEventListener {
-        override fun onDataChange(dataSnapshot: DataSnapshot) {
-            loadTaskList(dataSnapshot)
-        }
-        override fun onCancelled(databaseError: DatabaseError) {
-            // Getting Item failed, log a message
-            Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
-        }
-    }
+//    private fun loadTaskList(dataSnapshot: DataSnapshot) {
+//        Log.d("TAG", "loadTaskList for reviews")
+//
+//        val tasks = dataSnapshot.children.iterator()
+//
+//
+//        //Check if current database contains any collection
+//        if (tasks.hasNext()) {
+//
+//            _taskList!!.clear()
+//
+//
+//            val listIndex = tasks.next()
+//            val itemsIterator = listIndex.children.iterator()
+//
+//            //check if the collection has any task or not
+//            while (itemsIterator.hasNext()) {
+//
+//                //get current task
+//                val currentItem = itemsIterator.next()
+//                val task = Review.create()
+//
+//                //get current data in a map
+//                val key = currentItem.value as HashMap<*,*>
+//                Log.i("TAG", "printing key")
+//                Log.i("TAG", key.toString())
+//
+//
+//
+//                //key will return the Firebase ID
+//                task.name = key.get("User") as String
+//                task.review =key.get("Review") as String
+//                _taskList!!.add(task)
+//            }
+//        }
+//
+//        //alert adapter that has changed
+//        _adapterBar.notifyDataSetChanged()
+//
+//    }
+//
+//
+//    var _taskListener: ValueEventListener = object : ValueEventListener {
+//        override fun onDataChange(dataSnapshot: DataSnapshot) {
+//            loadTaskList(dataSnapshot)
+//        }
+//        override fun onCancelled(databaseError: DatabaseError) {
+//            // Getting Item failed, log a message
+//            Log.w("TAG", "loadItem:onCancelled", databaseError.toException())
+//        }
+//    }
 
 
    /* override fun onCreateOptionsMenu(menu: Menu?): Boolean {
