@@ -297,7 +297,7 @@ class UserProfile : AppCompatActivity(){
     }
 
     private fun startProfile(){
-        startActivity(Intent(this, UserProfile::class.java))
+        //startActivity(Intent(this, UserProfile::class.java))
     }
 
     /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
