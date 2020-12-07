@@ -117,16 +117,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         barsInfo = HashMap<String, HashMap<String, Double>>()
 
-        // this will call a function every 60 seconds that will poll the firebase and update the
-        // info snippets on the map markers
-        timedFunction = Timer()
-        timedFunction.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                JSONParser.updateInfo()
-            }
-        }, 10 * 1000, 10 * 1000) //put here time 1000 milliseconds=1 second
-
-
     }
     // this function is called when the google maps comes back to us ready to go (async)
     // this will tell us the map if ready to be worked on. Sometimes the user won't have given
@@ -308,46 +298,40 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return bm
     }
 
-
-    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        // R.menu.mymenu is a reference to an xml file named mymenu.xml which should be inside your res/menu directory.
-        // If you don't have res/menu, just create a directory named "menu" inside res
-        menuInflater.inflate(R.menu.action_bar_mapexcluded, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.title
-        if(id == "Bar List"){
-            startActivity(Intent(this, BarView::class.java))
-        }else if(id == "Profile"){
-            startActivity(Intent(this, UserProfile::class.java))
-        }
-        return super.onOptionsItemSelected(item)
-    }*/
-
     private fun startList(){
         startActivity(Intent(this, BarView::class.java))
     }
 
     private fun startmap(){
-        startActivity(Intent(this, MapsActivity::class.java))
+        //startActivity(Intent(this, MapsActivity::class.java))
     }
 
     private fun startProfile(){
         startActivity(Intent(this, UserProfile::class.java))
     }
 
+    override fun onResume() {
+        // this will call a function every 60 seconds that will poll the firebase and update the
+        // info snippets on the map markers
+        Log.i(TAG, "In on resume")
+        super.onResume()
+        timedFunction = Timer()
+        timedFunction.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                JSONParser.updateInfo()
+            }
+        }, 10 * 1000, 10 * 1000) //put here time 1000 milliseconds=1 second
+    }
+
     override fun onPause() {
         super.onPause()
         onStop()
     }
-
     override fun onStop() {
         super.onStop()
+        Log.i(TAG, "In onStop")
         timedFunction.cancel()
         timedFunction.purge()
-        finish()
     }
     companion object {
         private const val TAG = "TAG"

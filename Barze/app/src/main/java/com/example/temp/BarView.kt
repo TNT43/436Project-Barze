@@ -139,7 +139,7 @@ class BarView : AppCompatActivity(){
         return super.onOptionsItemSelected(item)
     }*/
     private fun startList(){
-        startActivity(Intent(this, BarView::class.java))
+        //startActivity(Intent(this, BarView::class.java))
     }
 
     private fun startmap(){
