@@ -25,21 +25,13 @@
         app:layout_constraintTop_toBottomOf="@+id/averageWaitingTimeLabel"
         />
 
-    <Button
-        android:id="@+id/btnSubmitWaitTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Submit Wait Time"
-        app:layout_constraintTop_toBottomOf="@id/WaitingTimeInput"
-        tools:ignore="MissingConstraints" />
 
     <CheckBox
         android:id="@+id/FavoriteCheckBox"
         android:layout_width="100dp"
         android:layout_height="80dp"
         android:text="Favorite Bar ?"
-        app:layout_constraintTop_toBottomOf="@+id/btnSubmitWaitTime"
+        app:layout_constraintTop_toBottomOf="@+id/WaitingTimeInput"
         tools:ignore="MissingConstraints" />
 
     <Button
