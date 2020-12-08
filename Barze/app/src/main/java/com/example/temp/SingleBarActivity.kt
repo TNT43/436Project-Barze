@@ -218,6 +218,12 @@ class SingleBarActivity : AppCompatActivity(){
         database.child("Images").child(barName).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 Log.i("TAG","Inside ondatachange")
+
+                // uploading 1st image for each bar
+                var firstIV = findViewById<ImageView>(R.id.imageView1)
+                val matcher = BarMatch()
+                firstIV.setImageResource(matcher.MatchImageWithName(barName))
+
                 val tasks = dataSnapshot.children.iterator()
                 //Check if current database contains any collection
                 if (tasks.hasNext()) {
